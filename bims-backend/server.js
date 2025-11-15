@@ -82,7 +82,9 @@ app.use(cors({
 // --- END MODIFICATION ---
 
 // --- 4. Body Parser ---
-app.use(express.json());
+// app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // --- 5. Session Setup ---
 // ** MODIFIED: Store session middleware in a variable **
