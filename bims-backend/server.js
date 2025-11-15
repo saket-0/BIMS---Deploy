@@ -15,16 +15,18 @@ const categoryRoutes = require('./routes/categories');
 const imageRoutes = require('./routes/image'); // <-- ADDED
 
 const app = express();
-const port = 3000;
+// --- MODIFIED: Use environment variables, default to 3000 ---
+const port = process.env.PORT || 3000;
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://127.0.0.1:5500';
 
 // --- 2. Database Connection ---
+// --- MODIFIED: Use DATABASE_URL from Render ---
 const pool = new Pool({
-    user: 'deep',
-    host: 'localhost',
-    database: 'bims',
-    password: 'password',
-    port: 5432,
+    connectionString: process.env.DATABASE_URL,
+    ssl: IS_PRODUCTION ? { rejectUnauthorized: false } : false
 });
+// --- END MODIFICATION ---
 
 // --- ** NEW: SSE Client Storage ** ---
 let sseClients = [];
@@ -46,13 +48,18 @@ const broadcastToClients = (eventName, data) => {
 };
 // --- ** END NEW ** ---
 
-// CRITICAL: Set trust proxy
+// --- MODIFIED: CRITICAL for Render deployment ---
 app.set('trust proxy', 1);
+// --- END MODIFICATION ---
 
 // --- 3. CORS Setup ---
+// --- MODIFIED: Use dynamic CORS Origin ---
 app.use(cors({
     origin: function(origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        // or if the origin is in our allowed list
         const allowedOrigins = [
+            CORS_ORIGIN,
             'http://127.0.0.1:5500', 
             'http://localhost:5500', 
             'http://127.0.0.1:5501', 
@@ -62,6 +69,7 @@ app.use(cors({
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
+            console.log(`CORS Error: Origin ${origin} not allowed.`);
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -70,6 +78,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'],
     exposedHeaders: ['set-cookie']
 }));
+// --- END MODIFICATION ---
 
 // --- 4. Body Parser ---
 app.use(express.json());
@@ -81,19 +90,19 @@ const sessionMiddleware = session({
         pool: pool,
         tableName: 'user_sessions'
     }),
-    secret: 'your_very_strong_secret_key_here', // <-- IMPORTANT: Change this to a real secret
+    // --- MODIFIED: Use environment variable for secret ---
+    secret: process.env.SESSION_SECRET || 'your_very_strong_secret_key_here',
+    // --- END MODIFICATION ---
     resave: false,
     saveUninitialized: false,
-    proxy: true,
+    proxy: true, // --- CRITICAL for Render ---
     cookie: {
-        // *** THIS IS THE FIX ***
-        // The old code said 24 * 60 * 60 * 1000 (24 hours)
-        // This is 5 * 60 * 1000 (5 minutes)
-        maxAge: 5 * 60 * 1000, 
-        // *** END OF FIX ***
+        maxAge: 5 * 60 * 1000, // 5 minutes
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        // --- MODIFIED: Secure cookies required for cross-site ---
+        secure: IS_PRODUCTION, // true in production
+        sameSite: IS_PRODUCTION ? 'none' : 'lax', // 'none' for cross-site
+        // --- END MODIFICATION ---
         path: '/',
         domain: undefined
     },
@@ -162,13 +171,14 @@ app.get('/api/events', sessionMiddleware, isAuthenticatedSSE, (req, res) => {
 
 
 // --- 9. Start Server ---
-app.listen(port, '127.0.0.1', () => {
+// --- MODIFIED: Use dynamic port and 0.0.0.0 for Render ---
+app.listen(port, '0.0.0.0', () => {
     console.log('\n=================================');
     console.log('🚀 BIMS Server Started');
     console.log('=================================');
-    console.log('URL: http://127.0.0.1:3000');
-    console.log('CORS Origins:');
-    console.log('  - http://127.0.0.1:5500');
-    console.log('  - http://localhost:5500');
+    console.log(`URL: http://127.0.0.1:${port}`);
+    console.log(`CORS Origin Allowed: ${CORS_ORIGIN}`);
+    console.log(`Production Mode: ${IS_PRODUCTION}`);
     console.log('=================================\n');
 });
+// --- END MODIFICATION ---
