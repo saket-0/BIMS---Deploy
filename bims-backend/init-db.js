@@ -40,14 +40,14 @@ const CREATE_TABLES_SQL = `
         hash TEXT NOT NULL
     );
 
+    -- *** FIXED: Define PRIMARY KEY in the CREATE TABLE statement for idempotency ***
     CREATE TABLE IF NOT EXISTS user_sessions (
-        "sid" varchar NOT NULL COLLATE "default",
+        "sid" varchar NOT NULL COLLATE "default" PRIMARY KEY,
         "sess" json NOT NULL,
         "expire" timestamp(6) NOT NULL
-    )
-    WITH (OIDS=FALSE);
-    ALTER TABLE user_sessions ADD CONSTRAINT "user_sessions_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
-
+    );
+    -- The separate ALTER TABLE ADD CONSTRAINT block is now REMOVED.
+    
     CREATE TABLE IF NOT EXISTS login_history (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
