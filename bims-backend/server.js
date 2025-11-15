@@ -18,7 +18,7 @@ const app = express();
 // --- MODIFIED: Use environment variables, default to 3000 ---
 const port = process.env.PORT || 3000;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://127.0.0.1:5500';
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'https://bims-app.netlify.app/';
 
 // --- 2. Database Connection ---
 // --- MODIFIED: Use DATABASE_URL from Render ---
