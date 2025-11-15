@@ -1,0 +1,191 @@
+<div class="space-y-8">
+    <div>
+        <button id="back-to-list-button" class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-800">
+            <i class="ph-bold ph-arrow-left"></i>
+            Back to All Products
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <form id="product-detail-form" class="flex flex-col md:flex-row gap-6">
+                    
+                    <div class="w-full md:w-1/3 h-auto rounded-lg bg-slate-100 flex-shrink-0 flex items-center justify-center aspect-square relative">
+                        <div id="product-detail-placeholder" class="items-center justify-center w-full h-full" style="display: none;">
+                            <i class="ph-bold ph-package text-slate-400 text-6xl"></i>
+                        </div>
+                        <img id="product-detail-image" src="" alt="Product Image" 
+                             class="w-full h-full object-cover rounded-lg aspect-square absolute top-0 left-0" 
+                             onerror="this.style.display='none'; this.parentElement.querySelector('#product-detail-placeholder').style.display='flex';"
+                        >
+                    </div>
+                    <input type="hidden" id="update-product-id" value="">
+                    
+                    <div class="w-full md:w-2/3 relative">
+                        
+                        <button id="product-edit-toggle-button" style="display: none;" class="absolute top-0 right-0 p-2 rounded-full text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-800" title="Edit Product Details">
+                            <i class="ph-bold ph-pencil-simple text-lg"></i>
+                        </button>
+
+                        <div id="product-display-view">
+                            <h2 id="detail-product-name" class="text-4xl font-bold text-slate-900 pr-12">Product Name</h2>
+                            <p id="detail-product-id" class="text-sm text-slate-500 mt-1">SKU-000</p>
+                            <p id="detail-product-category" class="text-sm font-medium text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-full inline-block mt-2">Category</p>
+                            <p id="detail-product-price" class="text-3xl font-bold text-slate-700 mt-2">₹0.00</p>
+                        </div>
+                        
+                        <div id="product-edit-view" class="hidden space-y-3">
+                            <div>
+                                <label for="edit-product-name" class="block text-sm font-medium text-slate-700">Product Name</label>
+                                <input type="text" id="edit-product-name" class="form-input-underline !text-3xl !font-bold" required>
+                            </div>
+                            <div>
+                                <label for="edit-product-category" class="block text-sm font-medium text-slate-700">Category</label>
+                                <select id="edit-product-category" class="form-select-underline" required>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit-product-price" class="block text-sm font-medium text-slate-700">Price (₹)</label>
+                                <input type="number" id="edit-product-price" step="0.01" class="form-input-underline !text-2xl !font-bold" required>
+                            </div>
+                            <div>
+                                <label for="edit-product-image-url" class="block text-sm font-medium text-slate-700">Image URL</label>
+                                <div class="flex gap-2">
+                                    <input type="url" id="edit-product-image-url" class="form-input-underline" placeholder="Paste URL or upload to crop">
+                                    
+                                    <div class="flex-shrink-0 flex gap-2">
+                                        <button type="button" id="edit-image-load-url-button" class="form-upload-button" title="Load Image from URL">
+                                            <i class="ph-bold ph-link"></i>
+                                        </button>
+                                        <button type="button" id="edit-image-recrop-button" class="form-upload-button" title="Recrop Current Image">
+                                            <i class="ph-bold ph-crop"></i>
+                                        </button>
+                                        <input type="file" id="edit-image-file-input" class="hidden" accept="image/png, image/jpeg">
+                                        <button type="button" id="edit-image-upload-button" class="form-upload-button" title="Upload Local Image & Crop">
+                                            <i class="ph-bold ph-upload-simple"></i>
+                                        </button>
+                                    </div>
+                                    </div>
+                            </div>
+                            <div class="flex gap-4 pt-2">
+                                <button type="submit" class="w-full md:w-auto bg-indigo-600 text-white py-2 px-6 rounded-md shadow-sm hover:bg-indigo-700 flex items-center justify-center gap-2">
+                                    <i class="ph-bold ph-save"></i>
+                                    Save
+                                </button>
+                                <button type="button" id="product-edit-cancel-button" class="w-full md:w-auto bg-slate-100 text-slate-700 py-2 px-6 rounded-md shadow-sm hover:bg-slate-200">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-2">Current Stock Levels</h3>
+                        <div id="detail-stock-levels" class="space-y-2">
+                            </div>
+                        <hr class="my-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-lg font-semibold text-slate-800">Total Stock:</span>
+                            <span id="detail-total-stock" class="text-2xl font-bold text-indigo-600">0</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="update-stock-container" class="bg-white p-6 rounded-lg shadow-md space-y-8">
+                <div>
+                    <h2 class="text-2xl font-semibold mb-4 text-slate-800">Update Stock (Add/Remove)</h2>
+                    <p class="text-sm text-slate-500 mb-4">Add or remove stock from a single location.</p>
+                    <form id="update-stock-form" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="update-quantity" class="block text-sm font-medium text-slate-700">Quantity</label>
+                                <input type="number" id="update-quantity" class="form-input-underline" value="10" min="1" required>
+                                </div>
+
+                            <div>
+                                <label for="update-location" class="block text-sm font-medium text-slate-700">Location</label>
+                                <select id="update-location" class="form-select-underline">
+                                    </select>
+                            </div>
+                            </div>
+
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button type="submit" id="stock-in-button" data-action="STOCK_IN" class="w-full bg-green-600 text-white py-2 px-6 rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-plus-circle"></i>
+                                Add Stock
+                            </button>
+                            <button type="submit" id="stock-out-button" data-action="STOCK_OUT" class="w-full bg-red-600 text-white py-2 px-6 rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-minus-circle"></i>
+                                Remove Stock
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="border-t border-slate-200 pt-6">
+                    <h2 class="text-2xl font-semibold mb-4 text-slate-800">Move Stock</h2>
+                    <p class="text-sm text-slate-500 mb-4">Transfer stock between two locations.</p>
+                    <form id="move-stock-form" class="space-y-4">
+                        <div>
+                            <label for="move-quantity" class="block text-sm font-medium text-slate-700">Quantity</label>
+                            <input type="number" id="move-quantity" class="form-input-underline" value="10" min="1" required>
+                            </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            
+                            <div>
+                                <label for="move-from-location" class="block text-sm font-medium text-slate-700">From Location</label>
+                                <select id="move-from-location" class="form-select-underline">
+                                    </select>
+                            </div>
+                            <div>
+                                <label for="move-to-location" class="block text-sm font-medium text-slate-700">To Location</label>
+                                <select id="move-to-location" class="form-select-underline">
+                                    </select>
+                            </div>
+                            </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-6 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-arrows-left-right"></i>
+                            Move Stock
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-2xl font-semibold mb-4 text-slate-800">Verifiable Stock History</h2>
+                <canvas id="item-stock-chart"></canvas>
+            </div>
+
+            <div id="danger-zone-container" class="bg-white p-6 rounded-lg shadow-md border-t-4 border-red-600" style="display: none;">
+                <h2 class="text-2xl font-semibold mb-4 text-red-700">Danger Zone</h2>
+                
+                <div id="delete-product-form">
+                    <p class="text-sm text-slate-500 mb-4">
+                        Permanently delete this product (SKU). This action is irreversible and will be logged to the blockchain.
+                        You can only delete a product if its total stock is 0.
+                    </p>
+                    <button id="delete-product-button" class="w-full bg-red-600 text-white py-2 px-6 rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-trash"></i>
+                        Delete Product
+                    </button>
+                </div>
+
+                <div id="product-archived-message" style="display: none;">
+                     <p class="text-lg font-medium text-slate-700">
+                        This product has been deleted and is archived. All actions are disabled.
+                     </p>
+                </div>
+            </div>
+            </div>
+
+        <div class="lg:col-span-1">
+            <div class="bg-white p-6 rounded-lg shadow-md sticky top-8">
+                <h2 class="text-2xl font-semibold mb-4 text-slate-800">Item History</h2>
+                <p class="text-sm text-slate-500 mb-4">Immutable transaction log for this item.</p>
+                <div id="item-history-display" class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
