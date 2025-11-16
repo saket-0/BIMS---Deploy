@@ -162,20 +162,21 @@ function validateTransaction(transaction, currentChain) {
  * @param {string} targetTimestampISO - An ISO string of the time to stop at.
  * @returns {object} An object containing { inventory, transactionCount }
  */
+
 // function rebuildStateAt(blockchainArray, targetTimestampISO) {
 //     const inventory = new Map();
 //     let transactionCount = 0;
 //     const targetDate = new Date(targetTimestampISO);
+//     const targetTime = targetDate.getTime();
 
 //     // Start at 1 to skip the Genesis block
 //     for (let i = 1; i < blockchainArray.length; i++) {
 //         const block = blockchainArray[i];
 //         const blockDate = new Date(block.timestamp);
+//         const blockTime = blockDate.getTime();
 
 //         // If the block's timestamp is *after* our target, stop processing.
-//         const targetTime = targetDate.getTime();
-//         const blockTime = blockDate.getTime();
-//         if (blockDate > targetDate) {
+//         if (blockTime > targetTime) {
 //             break; // This is the "time-travel" part
 //         }
 
@@ -193,17 +194,41 @@ function validateTransaction(transaction, currentChain) {
 function rebuildStateAt(blockchainArray, targetTimestampISO) {
     const inventory = new Map();
     let transactionCount = 0;
-    const targetDate = new Date(targetTimestampISO);
+    
+    // CRITICAL FIX: Ensure target timestamp is interpreted as UTC
+    // If the input is from datetime-local, it might be in local time
+    // Force it to be treated as UTC by appending 'Z' if not present
+    let normalizedTargetISO = targetTimestampISO;
+    if (!targetTimestampISO.endsWith('Z') && !targetTimestampISO.includes('+')) {
+        normalizedTargetISO = targetTimestampISO + 'Z';
+    }
+    
+    const targetDate = new Date(normalizedTargetISO);
     const targetTime = targetDate.getTime();
+    
+    console.log(`Time-travel to: ${targetTimestampISO} (normalized: ${normalizedTargetISO}, epoch: ${targetTime})`);
 
     // Start at 1 to skip the Genesis block
     for (let i = 1; i < blockchainArray.length; i++) {
         const block = blockchainArray[i];
-        const blockDate = new Date(block.timestamp);
+        
+        // CRITICAL FIX: Ensure block timestamp is also in UTC
+        // The block.timestamp is stored as ISO string in DB
+        const blockTimestamp = typeof block.timestamp === 'string' 
+            ? block.timestamp 
+            : new Date(block.timestamp).toISOString();
+            
+        const blockDate = new Date(blockTimestamp);
         const blockTime = blockDate.getTime();
+        
+        // Debug log for first few blocks
+        if (i <= 3) {
+            console.log(`Block ${i}: ${blockTimestamp} (epoch: ${blockTime}), target: ${targetTime}, include: ${blockTime <= targetTime}`);
+        }
 
         // If the block's timestamp is *after* our target, stop processing.
         if (blockTime > targetTime) {
+            console.log(`Stopped at block ${i} (timestamp after target)`);
             break; // This is the "time-travel" part
         }
 
@@ -214,7 +239,8 @@ function rebuildStateAt(blockchainArray, targetTimestampISO) {
             transactionCount++;
         }
     }
-
+    
+    console.log(`Time-travel complete: processed ${transactionCount} transactions`);
     return { inventory, transactionCount };
 }
 
