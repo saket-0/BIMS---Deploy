@@ -61,6 +61,8 @@ export const handleVerifyChain = async () => {
     }
 };
 
+
+
 // export const handleSnapshotForm = async (form, navigateTo) => {
 //     if (!permissionService.can('VIEW_HISTORICAL_STATE')) return showError("Access Denied.");
     
@@ -72,7 +74,18 @@ export const handleVerifyChain = async () => {
 //     button.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Generating...';
 
 //     try {
-//         const response = await fetch(`${API_BASE_URL}/api/blockchain/state-at?timestamp=${timestamp}`, {
+//         // CRITICAL FIX: Convert local datetime-local value to UTC ISO string
+//         // datetime-local returns a string like "2025-11-16T10:30"
+//         // We need to treat this as UTC, not local time
+//         const localDate = new Date(timestamp);
+        
+//         // Force interpretation as UTC by manually constructing the ISO string
+//         const utcTimestamp = timestamp.includes('T') ? timestamp + ':00.000Z' : new Date(timestamp).toISOString();
+        
+//         console.log('Original timestamp:', timestamp);
+//         console.log('Sending UTC timestamp:', utcTimestamp);
+        
+//         const response = await fetch(`${API_BASE_URL}/api/blockchain/state-at?timestamp=${encodeURIComponent(utcTimestamp)}`, {
 //             credentials: 'include'
 //         });
         
@@ -91,6 +104,7 @@ export const handleVerifyChain = async () => {
 //     }
 // };
 
+
 export const handleSnapshotForm = async (form, navigateTo) => {
     if (!permissionService.can('VIEW_HISTORICAL_STATE')) return showError("Access Denied.");
     
@@ -102,16 +116,19 @@ export const handleSnapshotForm = async (form, navigateTo) => {
     button.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Generating...';
 
     try {
-        // CRITICAL FIX: Convert local datetime-local value to UTC ISO string
-        // datetime-local returns a string like "2025-11-16T10:30"
-        // We need to treat this as UTC, not local time
+        // CRITICAL FIX: Properly convert local datetime-local to UTC
+        // datetime-local returns "2025-11-16T10:30" in the user's LOCAL timezone
+        // We need to convert this to UTC for the server
+        
+        // Parse as local time
         const localDate = new Date(timestamp);
         
-        // Force interpretation as UTC by manually constructing the ISO string
-        const utcTimestamp = timestamp.includes('T') ? timestamp + ':00.000Z' : new Date(timestamp).toISOString();
+        // Convert to UTC ISO string (this automatically handles timezone conversion)
+        const utcTimestamp = localDate.toISOString();
         
-        console.log('Original timestamp:', timestamp);
-        console.log('Sending UTC timestamp:', utcTimestamp);
+        console.log('User selected (local):', timestamp);
+        console.log('Converting to UTC:', utcTimestamp);
+        console.log('User timezone offset (minutes):', localDate.getTimezoneOffset());
         
         const response = await fetch(`${API_BASE_URL}/api/blockchain/state-at?timestamp=${encodeURIComponent(utcTimestamp)}`, {
             credentials: 'include'
