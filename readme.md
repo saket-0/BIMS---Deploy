@@ -101,4 +101,4 @@ The password for all seeded users is `password`.
 | :--- | :--- | :--- |
 | **Admin** | `admin@bims.com` | `password` |
 | **Inventory Manager** | `manager@bims.com` | `password` |
-| **Auditor** | `auditor@bims.com` | `password` |
+| **Auditor** | `auditor@bims.com` | `password` | 
